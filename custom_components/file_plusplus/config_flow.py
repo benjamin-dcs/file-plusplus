@@ -1,8 +1,8 @@
 """Config flow for file++ integration."""
 
+from __future__ import annotations
+
 from copy import deepcopy
-import logging
-import os
 from typing import Any
 
 import voluptuous as vol
@@ -12,11 +12,9 @@ from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
-    OptionsFlowWithConfigEntry,
 )
 from homeassistant.const import (
     CONF_FILE_PATH,
-    CONF_FILENAME,
     CONF_NAME,
     CONF_PLATFORM,
     CONF_UNIT_OF_MEASUREMENT,
@@ -35,8 +33,6 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import CONF_TIMESTAMP, DEFAULT_NAME, DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
 
 BOOLEAN_SELECTOR = BooleanSelector(BooleanSelectorConfig())
 TEMPLATE_SELECTOR = TemplateSelector(TemplateSelectorConfig())
@@ -77,9 +73,11 @@ class FileConfigFlowHandler(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> FileOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return FileOptionsFlowHandler(config_entry)
+        return FileOptionsFlowHandler()
 
     async def validate_file_path(self, file_path: str) -> bool:
         """Ensure the file path is valid."""
@@ -99,7 +97,7 @@ class FileConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_handle_step(
         self, platform: str, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle file config flow step."""
+        """Handle file++ config flow step."""
         errors: dict[str, str] = {}
         if user_input:
             user_input[CONF_PLATFORM] = platform
@@ -107,7 +105,7 @@ class FileConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             if not await self.validate_file_path(user_input[CONF_FILE_PATH]):
                 errors[CONF_FILE_PATH] = "not_allowed"
             else:
-                title = f"{platform.capitalize()} [{user_input[CONF_FILE_PATH]}]"
+                title = f"{DEFAULT_NAME} [{user_input[CONF_FILE_PATH]}]"
                 data = deepcopy(user_input)
                 options = {}
                 for key, value in user_input.items():
@@ -123,38 +121,17 @@ class FileConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_notify(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle file notifier config flow."""
+        """Handle file++ notifier config flow."""
         return await self._async_handle_step(Platform.NOTIFY.value, user_input)
 
     async def async_step_sensor(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle file sensor config flow."""
+        """Handle file++ sensor config flow."""
         return await self._async_handle_step(Platform.SENSOR.value, user_input)
 
-    async def async_step_import(self, import_data: dict[str, Any]) -> ConfigFlowResult:
-        """Import `file`` config from configuration.yaml."""
-        self._async_abort_entries_match(import_data)
-        platform = import_data[CONF_PLATFORM]
-        name: str = import_data.get(CONF_NAME, DEFAULT_NAME)
-        file_name: str
-        if platform == Platform.NOTIFY:
-            file_name = import_data.pop(CONF_FILENAME)
-            file_path: str = os.path.join(self.hass.config.config_dir, file_name)
-            import_data[CONF_FILE_PATH] = file_path
-        else:
-            file_path = import_data[CONF_FILE_PATH]
-        title = f"{name} [{file_path}]"
-        data = deepcopy(import_data)
-        options = {}
-        for key, value in import_data.items():
-            if key not in (CONF_FILE_PATH, CONF_PLATFORM, CONF_NAME):
-                data.pop(key)
-                options[key] = value
-        return self.async_create_entry(title=title, data=data, options=options)
 
-
-class FileOptionsFlowHandler(OptionsFlowWithConfigEntry):
+class FileOptionsFlowHandler(OptionsFlow):
     """Handle File++ options."""
 
     async def async_step_init(
