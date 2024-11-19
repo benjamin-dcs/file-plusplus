@@ -5,8 +5,6 @@ from __future__ import annotations
 import logging
 import os
 
-from file_read_backwards import FileReadBackwards
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
