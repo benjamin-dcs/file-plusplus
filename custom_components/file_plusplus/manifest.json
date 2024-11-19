@@ -1,10 +1,10 @@
 {
-    "domain": "file_plusplus",
-    "name": "File++",
-    "codeowners": ["@benjamin-dcs"],
+    "domain": "file",
+    "name": "File",
+    "codeowners": ["@fabaff"],
     "config_flow": true,
-    "documentation": "https://github.com/benjamin-dcs/File-plusplus",
+    "documentation": "https://www.home-assistant.io/integrations/file",
     "iot_class": "local_polling",
-    "issue_tracker": "https://github.com/benjamin-dcs/File-plusplus/issues",
-    "version": "1.0.0"
-}
+    "requirements": ["file-read-backwards==2.0.0"]
+  }
+  

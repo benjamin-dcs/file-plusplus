@@ -5,12 +5,9 @@ from __future__ import annotations
 import logging
 import os
 
-import voluptuous as vol
+from file_read_backwards import FileReadBackwards
 
-from homeassistant.components.sensor import (
-    PLATFORM_SCHEMA as SENSOR_PLATFORM_SCHEMA,
-    SensorEntity,
-)
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_FILE_PATH,
@@ -19,37 +16,12 @@ from homeassistant.const import (
     CONF_VALUE_TEMPLATE,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.template import Template
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .const import DEFAULT_NAME, FILE_ICON
 
 _LOGGER = logging.getLogger(__name__)
-
-PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_FILE_PATH): cv.isfile,
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-        vol.Optional(CONF_VALUE_TEMPLATE): cv.string,
-        vol.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string,
-    }
-)
-
-
-async def async_setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
-) -> None:
-    """Set up the file sensor from YAML.
-
-    The YAML platform config is automatically
-    imported to a config entry, this method can be removed
-    when YAML support is removed.
-    """
 
 
 async def async_setup_entry(
@@ -62,7 +34,7 @@ async def async_setup_entry(
     options = dict(entry.options)
     file_path: str = config[CONF_FILE_PATH]
     unique_id: str = entry.entry_id
-    name: str = config.get(CONF_NAME, DEFAULT_NAME) + "_" + file_path.split("/")[-1].replace(".", "_")
+    name: str = config.get(CONF_NAME, DEFAULT_NAME)
     unit: str | None = options.get(CONF_UNIT_OF_MEASUREMENT)
     value_template: Template | None = None
 
@@ -76,10 +48,6 @@ async def async_setup_entry(
 
 class FileSensor(SensorEntity):
     """Implementation of a file sensor."""
-
-    _unrecorded_attributes = frozenset(
-        {"content"}
-    )
 
     _attr_icon = FILE_ICON
 
@@ -99,33 +67,23 @@ class FileSensor(SensorEntity):
         self._attr_unique_id = unique_id
 
     def update(self) -> None:
-        """Return entity state."""
-        self._attr_native_value = "Ok"
-
-    @property
-    def extra_state_attributes(self):
-        """
-        Return entity state attributes.
-        Get the latest entry from a file and updates the state.
-        """
-
+        """Get the latest entry from a file and updates the state."""
         try:
-            with open(self._file_path, encoding="utf-8") as f:
-                data = f.read()
-        except (IndexError, FileNotFoundError, IsADirectoryError, UnboundLocalError) as e:
+            with FileReadBackwards(self._file_path, encoding="utf-8") as file_data:
+                for line in file_data:
+                    data = line
+                    break
+                data = data.strip()
+        except (IndexError, FileNotFoundError, IsADirectoryError, UnboundLocalError):
             _LOGGER.warning(
                 "File or data not present at the moment: %s",
                 os.path.basename(self._file_path),
             )
-            data = ""
+            return
 
-        if data and self._val_tpl is not None:
-            content = (
+        if self._val_tpl is not None:
+            self._attr_native_value = (
                 self._val_tpl.async_render_with_possible_json_value(data, None)
             )
         else:
-            content = data
-
-        return {
-            "content": content,
-        }
+            self._attr_native_value = data
