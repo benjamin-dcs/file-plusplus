@@ -47,14 +47,14 @@
     "step": {
       "init": {
         "data": {
-          "value_template": "[%key:component::file::config::step::sensor::data::value_template%]",
-          "unit_of_measurement": "[%key:component::file::config::step::sensor::data::unit_of_measurement%]",
-          "timestamp": "[%key:component::file::config::step::notify::data::timestamp%]"
+          "value_template": "Value template",
+          "unit_of_measurement": "Unit of measurement",
+          "timestamp": "Timestamp"
         },
         "data_description": {
-          "value_template": "[%key:component::file::config::step::sensor::data_description::value_template%]",
-          "unit_of_measurement": "[%key:component::file::config::step::sensor::data_description::unit_of_measurement%]",
-          "timestamp": "[%key:component::file::config::step::notify::data_description::timestamp%]"
+          "value_template": "A template to render the sensors value based on the file content",
+          "unit_of_measurement": "Unit of measurement for the sensor",
+          "timestamp": "Add a timestamp to the notification"
         }
       }
     }
