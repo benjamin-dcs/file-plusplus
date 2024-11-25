@@ -49,7 +49,8 @@ class FileNotifyEntity(NotifyEntity):
         file: TextIO
         filepath = self._file_path
         try:
-            with open(filepath, "a", encoding="utf8") as file:
+            # File++ - Mode to 'w'
+            with open(filepath, "w", encoding="utf8") as file:
                 # File++ - Delete header
                 if self._add_timestamp:
                     text = f"{dt_util.utcnow().isoformat()} {message}\n"
