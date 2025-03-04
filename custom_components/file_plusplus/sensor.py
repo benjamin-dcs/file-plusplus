@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-import os
+from pathlib import Path
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -63,6 +63,7 @@ class FileSensor(SensorEntity):
         self._attr_native_unit_of_measurement = unit_of_measurement
         self._val_tpl = value_template
         self._attr_unique_id = unique_id
+        self.entity_id = f"sensor.file_{Path(self._file_path).name.replace('.', '_')}"
 
     def update(self) -> None:
         """Return entity state."""
@@ -70,13 +71,13 @@ class FileSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        """
-        Return entity state attributes.
+        """Return entity state attributes.
+
         Get the latest entry from a file and updates the state.
         """
 
         try:
-            with open(self._file_path, encoding="utf-8") as f:
+            with Path.open(self._file_path, encoding="utf-8") as f:
                 data = f.read()
         except (
             IndexError,
@@ -86,7 +87,7 @@ class FileSensor(SensorEntity):
         ):
             _LOGGER.warning(
                 "File or data not present at the moment: %s",
-                os.path.basename(self._file_path),
+                Path(self._file_path).name,
             )
             data = ""
 

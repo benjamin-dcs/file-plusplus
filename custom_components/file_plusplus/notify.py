@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 from typing import Any, TextIO
 
-from homeassistant.components.notify import (
-    NotifyEntity,
-    NotifyEntityFeature,
-)
+from homeassistant.components.notify import NotifyEntity, NotifyEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_FILE_PATH, CONF_NAME
 from homeassistant.core import HomeAssistant
@@ -42,6 +39,7 @@ class FileNotifyEntity(NotifyEntity):
         # Only import a name from an imported entity
         self._attr_name = config.get(CONF_NAME, DEFAULT_NAME)
         self._attr_unique_id = unique_id
+        self.entity_id = f"notify.file_{Path(self._file_path).name.replace('.', '_')}"
 
     def send_message(self, message: str, title: str | None = None) -> None:
         """Send a message to a file."""
@@ -49,7 +47,7 @@ class FileNotifyEntity(NotifyEntity):
         filepath = self._file_path
         try:
             # File++ - Mode to 'w'
-            with open(filepath, "w", encoding="utf8") as file:
+            with Path.open(filepath, "w", encoding="utf8") as file:
                 # File++ - Delete header
                 if self._add_timestamp:
                     text = f"{dt_util.utcnow().isoformat()} {message}\n"
