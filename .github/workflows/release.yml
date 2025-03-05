@@ -14,7 +14,7 @@ jobs:
       id-token: write
     steps:
       - name: ⤵️ Checkout repository
-        uses: /checkout@v4
+        uses: actions/checkout@v4
 
       - name: 📦 Created zipped release package
         run: |
