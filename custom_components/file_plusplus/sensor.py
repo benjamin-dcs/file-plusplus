@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-import os
+from pathlib import Path
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -14,7 +14,7 @@ from homeassistant.const import (
     CONF_VALUE_TEMPLATE,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.template import Template
 
 from .const import DEFAULT_NAME, FILE_ICON
@@ -25,7 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the File++ sensor."""
     config = dict(entry.data)
@@ -70,25 +70,28 @@ class FileSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        """
-        Return entity state attributes.
+        """Return entity state attributes.
+
         Get the latest entry from a file and updates the state.
         """
 
         try:
-            with open(self._file_path, encoding="utf-8") as f:
+            with Path.open(self._file_path, encoding="utf-8") as f:
                 data = f.read()
-        except (IndexError, FileNotFoundError, IsADirectoryError, UnboundLocalError) as e:
+        except (
+            IndexError,
+            FileNotFoundError,
+            IsADirectoryError,
+            UnboundLocalError,
+        ):
             _LOGGER.warning(
                 "File or data not present at the moment: %s",
-                os.path.basename(self._file_path),
+                Path(self._file_path).name,
             )
             data = ""
 
         if data and self._val_tpl is not None:
-            content = (
-                self._val_tpl.async_render_with_possible_json_value(data, None)
-            )
+            content = self._val_tpl.async_render_with_possible_json_value(data, None)
         else:
             content = data
 

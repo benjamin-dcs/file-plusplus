@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  release_zip_file:
+    name: Prepare release asset 📁
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: ⤵️ Checkout repository
+        uses: /checkout@v4
+
+      - name: 📦 Created zipped release package
+        run: |
+          cd custom_components/file_plusplus
+          zip file-plusplus.zip -r ./
+
+      - name: 🔏 Sign release package
+        uses: sigstore/gh-action-sigstore-python@v3.0.0
+        with:
+          inputs: ${{ github.workspace }}/custom_components/file_plusplus/file-plusplus.zip
+
+      - name: ⬆️ Upload zip to release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          files: ${{ github.workspace }}/custom_components/file_plusplus/file-plusplus.zip

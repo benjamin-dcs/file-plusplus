@@ -2,20 +2,16 @@
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 from typing import Any, TextIO
 
-from homeassistant.components.notify import (
-    ATTR_TITLE_DEFAULT,
-    NotifyEntity,
-    NotifyEntityFeature,
-)
+from homeassistant.components.notify import NotifyEntity, NotifyEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_FILE_PATH, CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-import homeassistant.util.dt as dt_util
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .const import CONF_TIMESTAMP, DEFAULT_NAME, DOMAIN, FILE_ICON
 
@@ -23,7 +19,7 @@ from .const import CONF_TIMESTAMP, DEFAULT_NAME, DOMAIN, FILE_ICON
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up notify entity."""
     unique_id = entry.entry_id
@@ -50,7 +46,7 @@ class FileNotifyEntity(NotifyEntity):
         filepath = self._file_path
         try:
             # File++ - Mode to 'w'
-            with open(filepath, "w", encoding="utf8") as file:
+            with Path.open(filepath, "w", encoding="utf8") as file:
                 # File++ - Delete header
                 if self._add_timestamp:
                     text = f"{dt_util.utcnow().isoformat()} {message}\n"
