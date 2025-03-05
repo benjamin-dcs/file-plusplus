@@ -39,7 +39,6 @@ class FileNotifyEntity(NotifyEntity):
         # Only import a name from an imported entity
         self._attr_name = config.get(CONF_NAME, DEFAULT_NAME)
         self._attr_unique_id = unique_id
-        self.entity_id = f"notify.file_{Path(self._file_path).name.replace('.', '_')}"
 
     def send_message(self, message: str, title: str | None = None) -> None:
         """Send a message to a file."""

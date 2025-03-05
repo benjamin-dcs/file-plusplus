@@ -63,7 +63,6 @@ class FileSensor(SensorEntity):
         self._attr_native_unit_of_measurement = unit_of_measurement
         self._val_tpl = value_template
         self._attr_unique_id = unique_id
-        self.entity_id = f"sensor.file_{Path(self._file_path).name.replace('.', '_')}"
 
     def update(self) -> None:
         """Return entity state."""
