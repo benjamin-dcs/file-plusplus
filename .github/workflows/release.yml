@@ -2,31 +2,31 @@ name: Release
 
 on:
   release:
-    types: [published]
+    types:
+      - published
 
 jobs:
   release_zip_file:
-    name: Prepare release asset
+    name: Prepare release asset 📁
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - name: Set manifest version number
-        run: |
-          python ${{ github.workspace }}/.github/update_manifest.py --version ${{ github.ref_name }}
-      - name: Create zip
+      - name: ⤵️ Checkout repository
+        uses: /checkout@v4
+
+      - name: 📦 Created zipped release package
         run: |
           cd custom_components/file_plusplus
           zip file-plusplus.zip -r ./
-      - name: Upload zip to release
-        uses: svenstaro/upload-release-action@v2
+
+      - name: 🔏 Sign release package
+        uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./custom_components/file_plusplus/file-plusplus.zip
-          asset_name: file-plusplus.zip
-          tag: ${{ github.ref }}
-          overwrite: true
+          inputs: ${{ github.workspace }}/custom_components/file_plusplus/file-plusplus.zip
+
+      - name: ⬆️ Upload zip to release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          files: ${{ github.workspace }}/custom_components/file_plusplus/file-plusplus.zip
