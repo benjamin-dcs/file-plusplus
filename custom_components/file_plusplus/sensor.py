@@ -66,12 +66,9 @@ class FileSensor(SensorEntity):
 
         self._file_content = None
 
-    def update(self) -> None:
-        """Return entity state."""
-        self._attr_native_value = "Ok"
-
     async def async_update(self):
         """Fetch new state data for the sensor."""
+        self._attr_native_value = "Ok"
 
         def get_content():
             try:
