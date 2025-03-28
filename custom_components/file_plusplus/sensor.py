@@ -73,7 +73,6 @@ class FileSensor(SensorEntity):
 
         file_last_update = Path.stat(self._file_path).st_mtime
         if self._file_last_update == file_last_update:
-            print("returning")
             return
         self._file_last_update = file_last_update
 
