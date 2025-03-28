@@ -64,11 +64,18 @@ class FileSensor(SensorEntity):
         self._val_tpl = value_template
         self._attr_unique_id = unique_id
 
+        self._file_last_update = None
         self._file_content = None
 
     async def async_update(self):
         """Fetch new state data for the sensor."""
         self._attr_native_value = "Ok"
+
+        file_last_update = Path.stat(self._file_path).st_mtime
+        if self._file_last_update == file_last_update:
+            print("returning")
+            return
+        self._file_last_update = file_last_update
 
         def get_content():
             try:
