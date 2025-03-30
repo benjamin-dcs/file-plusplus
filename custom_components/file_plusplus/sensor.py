@@ -64,37 +64,46 @@ class FileSensor(SensorEntity):
         self._val_tpl = value_template
         self._attr_unique_id = unique_id
 
-    def update(self) -> None:
-        """Return entity state."""
+        self._file_last_update = None
+        self._file_content = None
+
+    async def async_update(self):
+        """Fetch new state data for the sensor."""
         self._attr_native_value = "Ok"
 
-    @property
-    def extra_state_attributes(self):
-        """Return entity state attributes.
+        file_last_update = Path.stat(self._file_path).st_mtime
+        if self._file_last_update == file_last_update:
+            return
+        self._file_last_update = file_last_update
 
-        Get the latest entry from a file and updates the state.
-        """
+        def get_content():
+            try:
+                with Path.open(self._file_path, encoding="utf-8") as f:
+                    return f.read()
+            except (
+                IndexError,
+                FileNotFoundError,
+                IsADirectoryError,
+                UnboundLocalError,
+            ):
+                _LOGGER.warning(
+                    "File or data not present at the moment: %s",
+                    Path(self._file_path).name,
+                )
+                return ""
 
-        try:
-            with Path.open(self._file_path, encoding="utf-8") as f:
-                data = f.read()
-        except (
-            IndexError,
-            FileNotFoundError,
-            IsADirectoryError,
-            UnboundLocalError,
-        ):
-            _LOGGER.warning(
-                "File or data not present at the moment: %s",
-                Path(self._file_path).name,
-            )
-            data = ""
+        data = await self.hass.async_add_executor_job(get_content)
 
         if data and self._val_tpl is not None:
             content = self._val_tpl.async_render_with_possible_json_value(data, None)
         else:
             content = data
 
+        self._file_content = content
+
+    @property
+    def extra_state_attributes(self):
+        """Return extra attributes."""
         return {
-            "content": content,
+            "content": self._file_content,
         }

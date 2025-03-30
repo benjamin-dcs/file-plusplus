@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -40,8 +41,8 @@ class FileNotifyEntity(NotifyEntity):
         self._attr_name = config.get(CONF_NAME, DEFAULT_NAME)
         self._attr_unique_id = unique_id
 
-    def send_message(self, message: str, title: str | None = None) -> None:
-        """Send a message to a file."""
+    async def write_file(self, message: str, title: str | None = None) -> None:
+        """Async write a message to a file."""
         file: TextIO
         filepath = self._file_path
         try:
@@ -59,3 +60,7 @@ class FileNotifyEntity(NotifyEntity):
                 translation_key="write_access_failed",
                 translation_placeholders={"filename": filepath, "exc": f"{exc!r}"},
             ) from exc
+
+    def send_message(self, message: str, title: str | None = None) -> None:
+        """Send a message to a file."""
+        asyncio.run(self.write_file(message, title))
