@@ -21,7 +21,7 @@ Based on the Home Assistant Core Integration [`File`](https://www.home-assistant
 # Installation
 
 ## Install via HACS (recommended) 
-Waiting on HACS to be added. In the meantime, this repo can be added as [`custom repository`](https://www.hacs.xyz/docs/faq/custom_repositories/)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=benjamin-dcs&repository=file-plusplus&category=Integration)
 
 ## Manual install
 1) Download the latest release of the File++ from this repository;
