@@ -11,6 +11,17 @@ Based on the Home Assistant Core Integration [`File`](https://www.home-assistant
 - Use the `notify` service to write multi-line content to a local file. If a file already exists, its content will be erased and the new content will be stored
 - Use the `sensor` service to read multi-line content from a local file. The content is available in the `content` attribute of the sensor.
 
+**Usage example**
+
+This integration uses the `Notifications: Send a notification message` action:
+```yaml
+action: notify.send_message
+data:
+  message: "{{ your_message }}"
+target:
+  entity_id: notify.your_file_plusplus_entity
+```
+
 **Removed:**
 - State of the `sensor` no longer holds the content of the file. Shows 'Ok' (for now :) ).
 - No header is written to empty/new files
